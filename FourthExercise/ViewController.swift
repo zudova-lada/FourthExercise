@@ -15,12 +15,16 @@ final class ViewController: UIViewController {
     private var items: [TableViewCellModel] = []
     
     private lazy var dataSource: UITableViewDiffableDataSource<ViewControllerSection, TableViewCellModel> = {
-        let dataSource = UITableViewDiffableDataSource<ViewControllerSection, TableViewCellModel>(tableView: tableView) { tableView, index, model in
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: "TableViewCell") as? TableViewCell else {
+        let dataSource = UITableViewDiffableDataSource<ViewControllerSection, TableViewCellModel>(tableView: tableView) { tableView, _, model in
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: "TableViewCell") else {
                 return UITableViewCell()
             }
-            
-            cell.configure(model: model)
+            cell.textLabel?.text = model.title
+            if model.isSelect {
+                cell.accessoryType = .checkmark
+            } else {
+                cell.accessoryType = .none
+            }
             return cell
         }
         return dataSource
@@ -39,7 +43,7 @@ final class ViewController: UIViewController {
         view.backgroundColor = .blue
         title = "Table"
         view.addSubview(tableView)
-        tableView.register(TableViewCell.self, forCellReuseIdentifier: "TableViewCell")
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "TableViewCell")
         tableView.delegate = self
         view.backgroundColor = .lightGray
         
@@ -117,51 +121,5 @@ final class TableViewCellModel: Hashable {
     init(title: String, isSelect: Bool = false) {
         self.title = title
         self.isSelect = isSelect
-    }
-}
-
-final class TableViewCell: UITableViewCell {
-    
-    private lazy var rightImage: UIImageView = {
-       let image = UIImageView()
-        image.contentMode = .scaleAspectFit
-        image.image = UIImage(systemName: "arrow.forward.circle.fill")
-        image.translatesAutoresizingMaskIntoConstraints = false
-        return image
-    }()
-    
-    private lazy var title: UILabel = {
-        let label = UILabel(frame: .zero)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
-
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
-        backgroundColor = .white
-//        selectionStyle = .none
-        addSubview(rightImage)
-        addSubview(title)
-        NSLayoutConstraint.activate([
-            title.topAnchor.constraint(equalTo: topAnchor, constant: 10),
-            title.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10),
-            title.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
-            title.trailingAnchor.constraint(equalTo: rightImage.leadingAnchor, constant: -5),
-            
-            rightImage.topAnchor.constraint(equalTo: topAnchor, constant: 10),
-            rightImage.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10),
-            rightImage.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10),
-            rightImage.widthAnchor.constraint(equalTo: rightImage.heightAnchor)
-        ])
-    }
-    
-    @available(*, unavailable)
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    func configure(model: TableViewCellModel) {
-        title.text = model.title
-        rightImage.isHidden = !model.isSelect
     }
 }
